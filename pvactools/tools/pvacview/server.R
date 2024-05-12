@@ -1797,7 +1797,13 @@ server <- shinyServer(function(input, output, session) {
     pageLength = 10,
     groupBy = NULL,
     orderBy = NULL,
-    peptide_features = NULL
+    peptide_features = NULL,
+    default_group_by = NULL,
+    default_sort_by = NULL,
+    default_x_var = NULL,
+    default_y_var = NULL,
+    default_color_var = NULL,
+    default_size_var = NULL
   )
   
   # Option 1: User uploaded 
@@ -1821,6 +1827,14 @@ server <- shinyServer(function(input, output, session) {
     mainData_custom <- type.convert(mainData_custom, as.is = TRUE)
     mainData_custom[is.na(mainData_custom)] <- 0
     df_custom$fullData <- mainData_custom
+    
+    # Default configurations
+    df_custom$default_group_by <- "Genomic variant"
+    df_custom$default_sort_by <- "Score"
+    df_custom$default_x_var <- "Predicted wildtype pMHC affinity"
+    df_custom$default_y_var <- "Score"
+    df_custom$default_color_var <- "Variant allele RNA read count"
+    df_custom$default_size_var <- "Variant allele RNA read count"
   })
   observeEvent(input$loadDefault_Neopredpipe, {
     data <- "data/neopredpipe.neoantigens.txt"
@@ -1831,6 +1845,15 @@ server <- shinyServer(function(input, output, session) {
     mainData_custom <- type.convert(mainData_custom, as.is = TRUE)
     mainData_custom[is.na(mainData_custom)] <- 0
     df_custom$fullData <- mainData_custom
+    
+    # Default configurations
+    df_custom$default_group_by <- "GeneName:RefID"
+    df_custom$default_sort_by <- "Score"
+    df_custom$default_x_var <- "Score"
+    df_custom$default_y_var <- "Binding Affinity"
+    df_custom$default_color_var <- "Rank"
+    df_custom$default_size_var <- "Binding Affinity"
+    
   })
   observeEvent(input$loadDefault_antigengarnish, {
     data <- "data/antigengarnish_test_antigen.tsv"
@@ -1841,13 +1864,21 @@ server <- shinyServer(function(input, output, session) {
     mainData_custom <- type.convert(mainData_custom, as.is = TRUE)
     mainData_custom[is.na(mainData_custom)] <- 0
     df_custom$fullData <- mainData_custom
+    
+    # Default configurations
+    df_custom$default_group_by <- "sample_id"
+    df_custom$default_sort_by <- "Ensemble_score"
+    df_custom$default_x_var <- "Ensemble_score"
+    df_custom$default_y_var <- "min_DAI"
+    df_custom$default_color_var <- "foreignness_score"
+    df_custom$default_size_var <- "dissimilarity"
   })
   
   # group peptides by
   output$custom_group_by_feature_ui <- renderUI({
     
     features <- as.list(names(df_custom$fullData))
-    default_selection <- ifelse(length(features) >= 1, features[[1]], "")
+    default_selection <- ifelse(!is.null(df_custom$default_group_by) && df_custom$default_group_by != "", df_custom$default_group_by, ifelse(length(features) >= 1, features[[1]], ""))
     
     pickerInput(inputId = "feature_1",
                 label = "Group peptides by",
@@ -1861,7 +1892,7 @@ server <- shinyServer(function(input, output, session) {
   output$custom_order_by_feature_ui <- renderUI({
     
     features <- names(df_custom$fullData)[sapply(df_custom$fullData, is.numeric)]
-    default_selection <- ifelse(length(features) >= 2, features[[2]], "")
+    default_selection <- ifelse(!is.null(df_custom$default_sort_by) && df_custom$default_sort_by != "", df_custom$default_sort_by, ifelse(length(features) >= 2, features[[2]], ""))
     
     pickerInput(inputId = "feature_2",
                 label = "Sort peptides by",
@@ -1991,12 +2022,9 @@ server <- shinyServer(function(input, output, session) {
   
   # Dynamic Scatter Plot 
   output$xvrbl_custom <- renderUI({
-    #df_custom <- df_custom$fullData
-    #df_custom <- type.convert(df_custom, as.is = TRUE)
-    #df[is.na(df)] <- 0
     
     features <- as.list(names(df_custom$fullData)[sapply(df_custom$fullData, is.numeric)])
-    default_selection <- ifelse(length(features) >= 1, features[[1]], "")
+    default_selection <- ifelse(!is.null(df_custom$default_x_var) && df_custom$default_x_var != "", df_custom$default_x_var, ifelse(length(features) >= 1, features[[1]], ""))
     
     pickerInput(inputId = "xvrbl_custom",
                 label = "X-Axis Variable",
@@ -2071,7 +2099,8 @@ server <- shinyServer(function(input, output, session) {
     df[is.na(df)] <- 0
     
     features <- as.list(names(df)[sapply(df, is.numeric)])
-    default_selection <- ifelse(length(features) >= 2, features[[2]], "")
+    default_selection <- ifelse(!is.null(df_custom$default_y_var), df_custom$default_y_var, ifelse(length(features) >= 2, features[[2]], ""))
+    
     
     pickerInput(inputId = "yvrbl_custom",
                 label = "Y-Axis Variable",
@@ -2146,7 +2175,7 @@ server <- shinyServer(function(input, output, session) {
     df[is.na(df)] <- 0
     
     features <- as.list(names(df)[sapply(df, is.numeric)])
-    default_selection <- ifelse(length(features) >= 3, features[[3]], "")
+    default_selection <- ifelse(!is.null(df_custom$default_color_var) && df_custom$default_color_var != "", df_custom$default_color_var, ifelse(length(features) >= 3, features[[3]], ""))
     
     pickerInput(inputId = "color_scatter_custom",
                 label = "Color",
@@ -2171,8 +2200,8 @@ server <- shinyServer(function(input, output, session) {
     df[is.na(df)] <- 0
     
     features <- as.list(names(df)[sapply(df, is.numeric)])
-    default_selection <- ifelse(length(features) >= 4, features[[4]], "")
-
+    default_selection <- ifelse(!is.null(df_custom$default_size_var) && df_custom$default_size_var != "", df_custom$default_size_var, ifelse(length(features) >= 4, features[[4]], ""))
+    
     pickerInput(inputId = "size_scatter_custom",
                 label = "Size",
                 choices = features,
