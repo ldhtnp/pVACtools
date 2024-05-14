@@ -27,36 +27,38 @@ custom_tab <- tabItem("custom",
                         br(), br(),
                         uiOutput("custom_upload_ui")
                     ),
-                    box(
-                      title = "Choose How to Visualize Data", status = "primary", solidHeader = TRUE, width = NULL,
-                      uiOutput("custom_group_by_feature_ui"),
-                      h5("Group peptides together by a certain feature. For example, grouping by variant would allow user to explore all proposed peptides for one variant at a time."),
-                      uiOutput("custom_order_by_feature_ui"),
-                      h5("Order peptides by a certain feature. For example, ordering peptides by binding scores to find the best binders."),
-                      uiOutput("custom_peptide_features_ui"),
-                      h5("Choose what features you would like to consider for each group of peptides."),
-                      actionButton("visualize_custom", "Visualize")
-                    ),
+
                 ),
                 column(6,
-                    box(
-                        title = "Example Neoantigen Prediction Pipelines", status = "primary", solidHeader = TRUE, width = NULL,
-                        h4("Vaxrank: A computational tool for designing personalized cancer vaccines", style = "font-weight: bold; text-decoration: underline;"),
-                        h5("Therapeutic vaccines targeting mutant tumor antigens (“neoantigens”) are an increasingly popular form of personalized cancer immunotherapy.
+                       box(
+                         title = "Choose How to Visualize Data", status = "primary", solidHeader = TRUE, width = NULL,
+                         uiOutput("custom_group_by_feature_ui"),
+                         h5("Group peptides together by a certain feature. For example, grouping by variant would allow user to explore all proposed peptides for one variant at a time."),
+                         uiOutput("custom_order_by_feature_ui"),
+                         h5("Order peptides by a certain feature. For example, ordering peptides by binding scores to find the best binders. Note that only numeric columns can be used for sorting."),
+                         uiOutput("custom_peptide_features_ui"),
+                         h5("Choose what features you would like to consider for each group of peptides."),
+                         actionButton("visualize_custom", "Visualize")
+                       ),
+                       box(
+                         title = "Example Neoantigen Prediction Pipelines", status = "primary", solidHeader = TRUE, width = NULL,
+                         h4("Vaxrank: A computational tool for designing personalized cancer vaccines", style = "font-weight: bold; text-decoration: underline;"),
+                         h5("Therapeutic vaccines targeting mutant tumor antigens (“neoantigens”) are an increasingly popular form of personalized cancer immunotherapy.
                         Vaxrank is a computational tool for selecting neoantigen vaccine peptides from tumor mutations, tumor RNA data, and patient HLA type.
                         Vaxrank is freely available at www.github.com/openvax/vaxrank under the Apache 2.0 open source license and can also be installed from the Python Package Index."),
-                        actionButton("vaxrank_help_doc", "Vaxrank Gtihub", onclick = "window.open('https://github.com/openvax/vaxrank', '_blank')"),
-                        hr(style = "border-color: white"),
-                        h4("NeoPredPipe: high-throughput neoantigen prediction and recognition potential pipeline", style = "font-weight: bold; text-decoration: underline;"),
-                        h5("NeoPredPipe (Neoantigen Prediction Pipeline) is offered as a contiguous means of predicting putative neoantigens and their corresponding recognition potentials for
+                         actionButton("vaxrank_help_doc", "Vaxrank Gtihub", onclick = "window.open('https://github.com/openvax/vaxrank', '_blank')"),
+                         hr(style = "border-color: white"),
+                         h4("NeoPredPipe: high-throughput neoantigen prediction and recognition potential pipeline", style = "font-weight: bold; text-decoration: underline;"),
+                         h5("NeoPredPipe (Neoantigen Prediction Pipeline) is offered as a contiguous means of predicting putative neoantigens and their corresponding recognition potentials for
                         both single and multi-region tumor samples. This tool allows a user to process neoantigens predicted from single- or multi-region vcf files using ANNOVAR and netMHCpan."),
-                        actionButton("neopredpipe_help_doc", "NeoPredPipe Gtihub", onclick = "window.open('https://github.com/MathOnco/NeoPredPipe', '_blank')"),
-                        hr(style = "border-color: white"),
-                        h4("antigen.garnish.2: Tumor neoantigen prediction", style = "font-weight: bold; text-decoration: underline;"),
-                        h5("Human and mouse ensemble tumor neoantigen prediction from SNVs and complex variants. Immunogenicity filtering based on the Tumor Neoantigen Selection Alliance (TESLA)."),
-                        actionButton("antigen_garnish_help_doc", "antigen.garnish Gtihub", onclick = "window.open('https://github.com/andrewrech/antigen.garnish', '_blank')"),
-                        hr(style = "border-color: white")
-                    )
+                         actionButton("neopredpipe_help_doc", "NeoPredPipe Gtihub", onclick = "window.open('https://github.com/MathOnco/NeoPredPipe', '_blank')"),
+                         hr(style = "border-color: white"),
+                         h4("antigen.garnish.2: Tumor neoantigen prediction", style = "font-weight: bold; text-decoration: underline;"),
+                         h5("Human and mouse ensemble tumor neoantigen prediction from SNVs and complex variants. Immunogenicity filtering based on the Tumor Neoantigen Selection Alliance (TESLA)."),
+                         actionButton("antigen_garnish_help_doc", "antigen.garnish Gtihub", onclick = "window.open('https://github.com/andrewrech/antigen.garnish', '_blank')"),
+                         hr(style = "border-color: white")
+                       )
+                  
                 )
             )
         ),

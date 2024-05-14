@@ -1379,7 +1379,7 @@ server <- shinyServer(function(input, output, session) {
     row.names(mainData_neofox) <- NULL
     
     # Columns that have been reviewed as most interesting
-    columns_to_star <- c(
+    columns_of_interest <- c(
       "dnaVariantAlleleFrequency", "rnaExpression", "imputedGeneExpression",
       "rnaVariantAlleleFrequency", "NetMHCpan_bestRank_rank", "NetMHCpan_bestAffinity_affinity",
       "NetMHCpan_bestAffinity_affinityWT", "NetMHCpan_bestRank_rankWT", "PHBR_I",
@@ -1392,7 +1392,7 @@ server <- shinyServer(function(input, output, session) {
     )
     
     # Check if each column is present in the dataframe and modify the names
-    for (col_name in columns_to_star) {
+    for (col_name in columns_of_interest) {
       if (col_name %in% names(mainData_neofox)) {
         new_col_name <- paste0("*", col_name)
         names(mainData_neofox)[names(mainData_neofox) == col_name] <- new_col_name
@@ -1412,7 +1412,7 @@ server <- shinyServer(function(input, output, session) {
     row.names(mainData_neofox) <- NULL
     
     # Columns that have been reviewed as most interesting
-    columns_to_star <- c(
+    columns_of_interest <- c(
       "dnaVariantAlleleFrequency", "rnaExpression", "imputedGeneExpression",
       "rnaVariantAlleleFrequency", "NetMHCpan_bestRank_rank", "NetMHCpan_bestAffinity_affinity",
       "NetMHCpan_bestAffinity_affinityWT", "NetMHCpan_bestRank_rankWT", "PHBR_I",
@@ -1425,12 +1425,21 @@ server <- shinyServer(function(input, output, session) {
     )
     
     # Check if each column is present in the dataframe and modify the names
-    for (col_name in columns_to_star) {
+    for (col_name in columns_of_interest) {
       if (col_name %in% names(mainData_neofox)) {
         new_col_name <- paste0("*", col_name)
         names(mainData_neofox)[names(mainData_neofox) == col_name] <- new_col_name
       }
     }    
+    
+    # Create a new list to store column names with asterisks
+    new_column_names <- names(mainData_neofox)
+    
+    # Reorder the columns in the dataframe
+    mainData_neofox <- mainData_neofox[, c(1:5, which(new_column_names %in% paste0("*", columns_of_interest)), 34:ncol(mainData_neofox))]
+    
+    # Order by rna expression
+    mainData_neofox <-  mainData_neofox[order(mainData_neofox$`*rnaExpression`, decreasing = TRUE), ]
     
     df_neofox$mainTable_neofox <- mainData_neofox
     updateTabItems(session, "neofox_tabs", "neofox_explore")
@@ -1718,7 +1727,7 @@ server <- shinyServer(function(input, output, session) {
   })
 
   output$max_color <- renderUI({
-    colourInput("max_col", "Select max color", "#14c4c4")
+    colourInput("max_col", "Select max color", "#00FFFF")
   })
 
   output$scatter <- renderPlotly({
@@ -1829,11 +1838,11 @@ server <- shinyServer(function(input, output, session) {
     df_custom$fullData <- mainData_custom
     
     # Default configurations
-    df_custom$default_group_by <- "Genomic variant"
-    df_custom$default_sort_by <- "Score"
-    df_custom$default_x_var <- "Predicted wildtype pMHC affinity"
-    df_custom$default_y_var <- "Score"
-    df_custom$default_color_var <- "Variant allele RNA read count"
+    df_custom$default_group_by <- "Gene name"
+    df_custom$default_sort_by <- "Predicted mutant pMHC affinity"
+    df_custom$default_x_var <- "Predicted mutant pMHC affinity"
+    df_custom$default_y_var <- "Predicted wildtype pMHC affinity"
+    df_custom$default_color_var <- "Score"
     df_custom$default_size_var <- "Variant allele RNA read count"
   })
   observeEvent(input$loadDefault_Neopredpipe, {
@@ -1848,7 +1857,7 @@ server <- shinyServer(function(input, output, session) {
     
     # Default configurations
     df_custom$default_group_by <- "GeneName:RefID"
-    df_custom$default_sort_by <- "Score"
+    df_custom$default_sort_by <- "Binding Affinity"
     df_custom$default_x_var <- "Score"
     df_custom$default_y_var <- "Binding Affinity"
     df_custom$default_color_var <- "Rank"
@@ -1866,7 +1875,7 @@ server <- shinyServer(function(input, output, session) {
     df_custom$fullData <- mainData_custom
     
     # Default configurations
-    df_custom$default_group_by <- "sample_id"
+    df_custom$default_group_by <- "transcript_id"
     df_custom$default_sort_by <- "Ensemble_score"
     df_custom$default_x_var <- "Ensemble_score"
     df_custom$default_y_var <- "min_DAI"
@@ -1951,35 +1960,45 @@ server <- shinyServer(function(input, output, session) {
     df_custom$groupBy <- input$feature_1
     df_custom$orderBy <- input$feature_2
     
-    reformat_data <- df_custom$fullData %>% group_by(across(all_of(df_custom$groupBy))) %>% arrange(across(all_of(df_custom$orderBy)))
+    reformat_data <- df_custom$fullData %>%
+      arrange(across(all_of(df_custom$orderBy))) %>%
+      group_by(across(all_of(df_custom$groupBy)))
+    
     reformat_data <- type.convert(reformat_data, as.is = TRUE)
     reformat_data[is.na(reformat_data)] <- 0
     
     df_custom$fullData <- reformat_data
+    
     row_ind <- reformat_data %>% group_rows()
     row_ind_df <- as.data.frame(row_ind)
     df_custom$group_inds <- row_ind_df
     row_ind_top <- apply(row_ind_df, 1, function(x) {unlist(x[1])[1]})
     df_custom$mainTable_custom <- as.data.frame(reformat_data[row_ind_top, ])
+    
     df_custom$mainTable_custom <- cbind(Select = shinyInputSelect(actionButton, nrow(df_custom$mainTable_custom), "button_", label = "Investigate", onclick = 'Shiny.onInputChange(\"custom_select_button\",  this.id)'), df_custom$mainTable_custom)
+    df_custom$mainTable_custom <- df_custom$mainTable_custom[order(df_custom$mainTable_custom[[df_custom$orderBy]]), ]
+    rownames(df_custom$mainTable_custom) <- NULL
     df_custom$metricsData <- get_group_inds(df_custom$fullData, df_custom$group_inds)
     df_custom$peptide_features <- input$peptide_features
     updateTabItems(session, "custom_tabs", "custom_explore")
     
     updateSelectInput(session, "feature_1", selected = df_custom$groupBy)
-    updateSelectInput(session, "feature_2", selected = df_custom$orderBy)
+    updateSelectInput(session, "feature_2", selected = df_custom$orderBy) 
   })
-  
-  output$customTable <- DT::renderDataTable(
-    if (is.null(df_custom$mainTable_custom)) {
-      return(datatable(data.frame("Annotated Table" = character())))
-    }else {
-      datatable(df_custom$mainTable_custom,
-                escape = FALSE, class = "stripe",
-                selection = "single",
-                extensions = c("Buttons")
-                
-      )
+    
+    output$customTable <- DT::renderDataTable({
+      if (is.null(df_custom$mainTable_custom)) {
+        return(datatable(data.frame("Annotated Table" = character())))
+      } else {
+        #ordered_data <- df_custom$mainTable_custom[order(df_custom$mainTable_custom[[df_custom$orderBy]]), ]
+        datatable(
+          df_custom$mainTable_custom,
+          escape = FALSE,
+          class = "stripe",
+          selection = "single",
+          extensions = c("Buttons")
+        )
+      }
     }, server = FALSE)
   
 
@@ -2191,7 +2210,7 @@ server <- shinyServer(function(input, output, session) {
   })
   
   output$max_color_custom <- renderUI({
-    colourInput("max_col_custom", "Select max color", "#14c4c4")
+    colourInput("max_col_custom", "Select max color", "#00FFFF")
   })
   
   output$size_custom<- renderUI({
