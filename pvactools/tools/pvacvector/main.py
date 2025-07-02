@@ -55,6 +55,13 @@ def define_parser():
         add_help=False
     )
     download_example_data_parser.set_defaults(func=download_example_data)
+
+    create_vector_ordering_form_parser = subparsers.add_parser(
+        "create_vector_ordering_form",
+        help="Generate a colored version of the final vector design",
+        add_help=False
+    )
+    create_vector_ordering_form_parser.set_defaults(func=create_vector_ordering_form)
     return parser
 
 def main():
