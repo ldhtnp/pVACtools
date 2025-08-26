@@ -63,11 +63,19 @@ New in Version |release|
 
 This is a bugfix release. It fixes the following problem(s):
 
-* Handle cases where the peptide sequence for a variant is missing from the fasta during reference proteome similarity matching. Instead of throwing in error, skip such entries and mark Ref Prot column as "Not Run". by @susannasiebert in https://github.com/griffithlab/pVACtools/pull/1253
-* Write a log message for the above cases. by @susannasiebert in https://github.com/griffithlab/pVACtools/pull/1259
-* Fix bug in processing inframe deletions during aggregation causing the variant type to not be set correctly. by @susannasiebert in https://github.com/griffithlab/pVACtools/pull/1255
-* Respect ``--anchor-types`` parameter in pVACsplice. Previously, even when specifying this parameter it would be ignored and a hard-coded list of anchors would be used. by @susannasiebert in https://github.com/griffithlab/pVACtools/pull/1258
-* Update description of the ``--starfusion-file`` parameter to reflect that it can be used with Arriba data. by @susannasiebert in https://github.com/griffithlab/pVACtools/pull/1263
+* Fix a couple of issues with the new `--top-score-metric2` by @susannasiebert in https://github.com/griffithlab/pVACtools/pull/1291
+
+  * When adding the ``--top-score-metric2`` option, the logic for determining
+    the included candidates during aggregate report creation was amended to
+    compare either the IC50 or percentile to the aggregate inclusion binding
+    threshold. This logic should not have been changed and instead only the
+    IC50 should be compared to the aggregate inclusion binding threshold, no
+    matter which ``--top-score-metric2`` was selected. This specific change
+    has been reverted
+  * In order to achieve deterministic results when using the percentile
+    ``--top-score-metric2`` option, a peptides.sort() call was used. This
+    release replaces this with a better way of finding the best peptide by
+    using the IC50 as a secondary sort criteria.
 
 New in Version 5
 ----------------
